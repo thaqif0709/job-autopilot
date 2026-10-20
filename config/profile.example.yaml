@@ -1,10 +1,14 @@
 # Copy to profile/profile.yaml (git-ignored) and fill it in.
 name: Your Name
+# Only needed if your name doesn't split as first word + the rest.
+# firstName: Your
+# lastName: Name
 email: you@example.com
 phone: ""
 links:
   github: https://github.com/you
   linkedin: https://www.linkedin.com/in/you
+  # portfolio: https://you.dev
 
 stack: [TypeScript, Node.js, Python, SQL]
 

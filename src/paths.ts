@@ -9,6 +9,8 @@ export function paths(root = process.cwd()) {
     facts: path.join(root, "profile", "facts.yaml"),
     db: path.join(root, "data", "jobs.db"),
     cache: path.join(root, "data", "cache"),
+    /** A separate browser profile, so sign-ins you make for applications stay out of your everyday browser. */
+    browserProfile: path.join(root, "data", "browser-profile"),
     out: path.join(root, "out"),
   };
 }
