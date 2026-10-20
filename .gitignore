@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.env
+
+# Personal data stays on your machine
+profile/
+out/
+data/
+config/companies.yaml

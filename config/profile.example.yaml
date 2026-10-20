@@ -1,0 +1,33 @@
+# Copy to profile/profile.yaml (git-ignored) and fill it in.
+name: Your Name
+email: you@example.com
+phone: ""
+links:
+  github: https://github.com/you
+  linkedin: https://www.linkedin.com/in/you
+
+stack: [TypeScript, Node.js, Python, SQL]
+
+targets:
+  titles:
+    - Internal Tools Engineer
+    - Software Engineer, Internal Applications
+    - AI Automation Engineer
+    - Business Applications Developer
+  blockTitles: [Sales Engineer, Presales, Site Reliability, SRE, Support Engineer]
+  # Empty list means any location. Matched as part of the posting's location text.
+  locations: [Kuala Lumpur, Malaysia]
+  acceptRemote: true
+  salary: { currency: MYR, min: 9000, max: 13000, period: month }
+
+# Phrases that warn of on-call or support duty. Uncomment to replace the built-in list.
+# supportFlags: ["you build it, you run it", "24/7", "on-call", "incident response"]
+
+# Weights for the five scoring criteria. They do not need to add up to 100.
+weights: { roleFit: 35, supportBoundary: 25, skills: 20, pay: 10, practicalities: 10 }
+
+# Copied verbatim into matching screening questions. Never generated.
+fixedAnswers:
+  workAuthorisation: ""
+  salaryExpectation: ""
+  noticePeriod: ""

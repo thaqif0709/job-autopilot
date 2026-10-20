@@ -1,0 +1,8 @@
+# Copy to config/companies.yaml (git-ignored) and list the companies you want to watch.
+# The board name is the part of the careers URL after the host:
+#   https://boards.greenhouse.io/<greenhouse>   or   https://jobs.lever.co/<lever>
+companies:
+  - name: Example Co
+    greenhouse: exampleco
+  - name: Another Co
+    lever: anotherco

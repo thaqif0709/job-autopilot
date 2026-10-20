@@ -1,0 +1,13 @@
+# Copy to profile/facts.yaml (git-ignored). Drafts may only say what these facts support,
+# and every drafted sentence cites the ids it relies on. Use kind "cv" for entries that
+# belong on the CV; label personal projects as prototypes.
+facts:
+  - id: exp-current
+    kind: cv
+    text: Software developer at Example Ltd since 2021, building internal tools and handling deployments.
+  - id: auto-dev-workflow
+    kind: cv
+    text: Built automations that ... (say what the problem was, what you built, who used it, and a result you can verify).
+  - id: proj-whatsapp-bot
+    kind: project
+    text: WhatsApp booking chatbot (personal prototype, not deployed for live use).
