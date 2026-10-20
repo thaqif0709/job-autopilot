@@ -88,5 +88,12 @@ function lever(job: FillJob, profile: Profile, d: ApprovedDraft, docs: Documents
 export function planFor(job: FillJob, profile: Profile, d: ApprovedDraft, docs: Documents): SitePlan {
   if (job.source === "greenhouse") return greenhouse(job, profile, d, docs);
   if (job.source === "lever") return lever(job, profile, d, docs);
+  if (job.source === "gmail") {
+    const site = job.board === "linkedin" ? "LinkedIn" : "Jobstreet";
+    throw new Error(
+      `Form filling supports Greenhouse and Lever jobs, so apply on ${site} yourself: ${job.apply_url}\n` +
+        `Your CV and cover letter are ready at ${docs.cv} and ${docs.coverLetter}. Afterwards run: jobs submitted <id>`,
+    );
+  }
   throw new Error(`Form filling supports Greenhouse and Lever jobs; this one came from ${job.source}.`);
 }

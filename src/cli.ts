@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 import "dotenv/config";
+import fs from "node:fs";
+import path from "node:path";
 import readline from "node:readline/promises";
 import { Command, InvalidArgumentError } from "commander";
 import { chromium } from "playwright";
@@ -10,6 +12,8 @@ import { fillForm, findBlocker } from "./fill/filler.js";
 import { prepareFill, screenshotPath } from "./fill/index.js";
 import { approve, runDraft, runFetch, runRank } from "./pipeline.js";
 import { CRITERIA, type ScoreOutput } from "./rank/score.js";
+import { cachedResolver } from "./sources/email.js";
+import { emailPostings, gmailLogin, readGmail } from "./sources/gmail.js";
 import { cachedHttp } from "./sources/http.js";
 import { formatTable, listJobs, statusCounts } from "./track/board.js";
 import { STATUSES, type Status } from "./types.js";
@@ -35,9 +39,23 @@ const program = new Command()
 
 program
   .command("fetch")
-  .description("Fetch postings from the Greenhouse and Lever boards in config/companies.yaml")
-  .action(async () => {
-    const r = await runFetch(db(), http(), loadCompanies(p.companies), loadProfile(p.profile));
+  .description("Fetch postings from the boards in config/companies.yaml and from LinkedIn and Jobstreet alert emails")
+  .option("--eml <files...>", "also read job alerts from these saved .eml files")
+  .option("--no-gmail", "skip Gmail even when it is set up in .env")
+  .option("--days <n>", "how many days of Gmail to read", int, 14)
+  .action(async (o: { eml?: string[]; gmail: boolean; days: number }) => {
+    const emails: { name: string; raw: Buffer }[] = (o.eml ?? []).map((f) => ({ name: path.basename(f), raw: fs.readFileSync(f) }));
+    const login = o.gmail ? gmailLogin() : null;
+    if (login) {
+      const raw = await readGmail(login, o.days);
+      emails.push(...raw.map((r, i) => ({ name: `Gmail message ${i + 1}`, raw: r })));
+    }
+    const fromEmail = emails.length ? await emailPostings(emails, cachedResolver(p.redirects)) : undefined;
+    // Boards are optional once alert emails are coming in.
+    const companies = fromEmail && !fs.existsSync(p.companies) ? { companies: [] } : loadCompanies(p.companies);
+    const r = await runFetch(db(), http(), companies, loadProfile(p.profile), fromEmail);
+    if (fromEmail) console.log(`Read ${fromEmail.read} emails and found ${fromEmail.postings.length} job cards in them.`);
+    else if (o.gmail) console.log("Gmail is not set up, so only the boards were read (see README: Gmail job alerts).");
     console.log(`Seen ${r.seen} postings: ${r.added} new, ${r.dropped} of them dropped by your rules.`);
     for (const e of r.errors) console.warn(`  ${e.company} (${e.source}): ${e.message}`);
     if (r.added - r.dropped > 0) console.log("Next: jobs rank");
