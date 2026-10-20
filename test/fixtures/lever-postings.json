@@ -1,0 +1,14 @@
+[
+  {
+    "id": "a1b2c3d4-0000-4000-8000-000000000001",
+    "text": "Software Engineer - Internal Tools",
+    "hostedUrl": "https://jobs.lever.co/anotherco/a1b2c3d4-0000-4000-8000-000000000001",
+    "createdAt": 1760000000000,
+    "workplaceType": "hybrid",
+    "categories": { "location": "Kuala Lumpur" },
+    "descriptionPlain": "We automate workflows for finance and HR.",
+    "lists": [{ "text": "What you'll do", "content": "<li>Build internal apps</li><li>Work with the platform team, who own deployment</li>" }],
+    "additionalPlain": "",
+    "salaryRange": { "min": 10000, "max": 14000, "currency": "MYR", "interval": "per-month-salary" }
+  }
+]

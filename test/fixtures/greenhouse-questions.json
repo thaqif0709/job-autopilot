@@ -1,0 +1,9 @@
+{
+  "id": 4012345,
+  "questions": [
+    { "label": "First Name", "required": true, "fields": [{ "name": "first_name", "type": "input_text" }] },
+    { "label": "Resume/CV", "required": true, "fields": [{ "name": "resume", "type": "input_file" }, { "name": "resume_text", "type": "textarea" }] },
+    { "label": "Why do you want to build internal tools?", "required": true, "fields": [{ "name": "question_1", "type": "textarea" }] },
+    { "label": "Are you authorised to work in Malaysia?", "required": true, "fields": [{ "name": "question_2", "type": "multi_value_single_select" }] }
+  ]
+}

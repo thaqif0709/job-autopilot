@@ -1,0 +1,20 @@
+{
+  "jobs": [
+    {
+      "id": 4012345,
+      "title": "Senior Software Engineer, Internal Tools",
+      "absolute_url": "https://boards.greenhouse.io/exampleco/jobs/4012345",
+      "updated_at": "2026-10-15T09:00:00-04:00",
+      "location": { "name": "Kuala Lumpur, Malaysia" },
+      "content": "&lt;p&gt;Build tools for our ops team.&lt;/p&gt;&lt;ul&gt;&lt;li&gt;TypeScript &amp;amp; Node&lt;/li&gt;&lt;li&gt;Join the on-call rotation&lt;/li&gt;&lt;/ul&gt;"
+    },
+    {
+      "id": 4012346,
+      "title": "Sales Engineer",
+      "absolute_url": "https://boards.greenhouse.io/exampleco/jobs/4012346",
+      "updated_at": null,
+      "location": { "name": "Remote" },
+      "content": "&lt;p&gt;Demo the product.&lt;/p&gt;"
+    }
+  ]
+}
