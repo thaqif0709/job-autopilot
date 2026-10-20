@@ -23,6 +23,9 @@ const Score = z.number().min(0);
 
 export const ProfileSchema = z.object({
   name: z.string(),
+  /** Used for forms with separate name fields. Default: the first word of name, and the rest. */
+  firstName: z.string().optional(),
+  lastName: z.string().optional(),
   email: z.string(),
   phone: z.string().default(""),
   links: z.record(z.string(), z.string()).default({}),

@@ -1,9 +1,13 @@
 #!/usr/bin/env node
 import "dotenv/config";
+import readline from "node:readline/promises";
 import { Command, InvalidArgumentError } from "commander";
+import { chromium } from "playwright";
 import { loadCompanies, loadFacts, loadProfile } from "./config.js";
 import { addFeedback, getDraft, getJob, getScore, openDb, setStatus } from "./db/index.js";
 import { claudeLlm, draftModel, scoreModel } from "./llm.js";
+import { fillForm, findBlocker } from "./fill/filler.js";
+import { prepareFill, screenshotPath } from "./fill/index.js";
 import { approve, runDraft, runFetch, runRank } from "./pipeline.js";
 import { CRITERIA, type ScoreOutput } from "./rank/score.js";
 import { cachedHttp } from "./sources/http.js";
@@ -126,6 +130,58 @@ program
     const r = approve(db(), int(id), o);
     console.log(`Approved the drafts in ${r.dir}.`);
   });
+
+// Set JOBS_CHROMIUM to use an installed Chrome or Chromium instead of Playwright's own download.
+const executablePath = () => process.env.JOBS_CHROMIUM || undefined;
+
+program
+  .command("fill <id>")
+  .description("Open the application form, fill it from the approved drafts, and leave Submit to you")
+  .action(async (id: string) => {
+    const d = db();
+    const jobId = int(id);
+    const pdfBrowser = await chromium.launch({ executablePath: executablePath() });
+    const prepared = await prepareFill(d, jobId, loadProfile(p.profile), pdfBrowser).finally(() => pdfBrowser.close());
+    const context = await chromium.launchPersistentContext(p.browserProfile, { headless: false, executablePath: executablePath(), viewport: null });
+    const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+    try {
+      const page = context.pages()[0] ?? (await context.newPage());
+      await page.goto(prepared.plan.url, { waitUntil: "domcontentloaded" });
+      await page.waitForLoadState("networkidle").catch(() => undefined);
+      const blocker = await findBlocker(page);
+      if (blocker) {
+        console.log(`Stopped: ${blocker}. Deal with it in the browser, then run: jobs fill ${jobId}`);
+        await rl.question("Press Enter to close the browser. ");
+        return;
+      }
+      const r = await fillForm(page, prepared.plan);
+      await page.screenshot({ path: screenshotPath(prepared.dir, "filled"), fullPage: true });
+      setStatus(d, jobId, "filled");
+      console.log(`Filled: ${r.filled.join(", ") || "nothing"}`);
+      for (const m of r.missing) console.log(`  Needs you: ${m.name} (${m.reason})`);
+      if (r.requiredEmpty.length) console.log(`  Required and still empty: ${r.requiredEmpty.join("; ")}`);
+      console.log("\nFields that need you are outlined in orange. Check the whole form, then click Submit yourself.");
+      const answer = await rl.question("When the confirmation page shows, press Enter to save it. Type q to close without marking it submitted. ");
+      if (answer.trim().toLowerCase() !== "q") {
+        await page.screenshot({ path: screenshotPath(prepared.dir, "confirmation"), fullPage: true });
+        setStatus(d, jobId, "submitted", "confirmation screenshot saved");
+        console.log(`Marked submitted. Confirmation saved to ${screenshotPath(prepared.dir, "confirmation")}.`);
+      }
+    } finally {
+      rl.close();
+      await context.close();
+    }
+  });
+
+for (const [name, to, about] of [
+  ["submitted", "submitted", "Mark a job as submitted (when you applied outside jobs fill)"],
+  ["replied", "replied", "Mark that the employer replied"],
+] as const) {
+  program
+    .command(`${name} <id> [note...]`)
+    .description(about)
+    .action((id: string, note: string[]) => setStatus(db(), int(id), to, note.join(" ") || undefined));
+}
 
 program
   .command("board")

@@ -1,0 +1,18 @@
+<!doctype html>
+<html><body>
+<form id="application" onsubmit="event.preventDefault(); window.submits = (window.submits || 0) + 1;">
+  <label for="first_name">First Name *</label><input id="first_name" required>
+  <label for="last_name">Last Name *</label><input id="last_name" required>
+  <label for="email">Email *</label><input id="email" type="email" required>
+  <label for="phone">Phone</label><input id="phone" type="tel">
+  <label for="resume">Resume/CV *</label><input id="resume" type="file" required>
+  <label for="cover_letter">Cover Letter</label><input id="cover_letter" type="file">
+  <label for="question_1">LinkedIn Profile</label><input id="question_1">
+  <label for="question_2">Why do you want to build internal tools? *</label><textarea id="question_2" required></textarea>
+  <label for="question_3">Are you authorised to work in Malaysia? *</label>
+  <select id="question_3" required><option value="">Select...</option><option>Yes</option><option>No</option></select>
+  <label for="question_4">I agree to the privacy notice *</label><input id="question_4" type="checkbox" required>
+  <button>Submit application</button>
+</form>
+<script>document.querySelector("button").addEventListener("click", () => { window.clicks = (window.clicks || 0) + 1; });</script>
+</body></html>
