@@ -6,8 +6,7 @@ Design: [Job Finder and Ranker: Design](https://claude.ai/code/artifact/d0a55878
 
 ## Status
 
-Built: fetch from Greenhouse and Lever, rule filter, Claude scoring, drafting, approve, CV and cover letter PDFs, form filling that stops before Submit, and status tracking.
-Not built yet: reading job-alert emails through Gmail.
+Built: fetch from Greenhouse and Lever, LinkedIn and Jobstreet alert emails from Gmail, rule filter, Claude scoring, drafting, approve, CV and cover letter PDFs, form filling that stops before Submit, and status tracking.
 
 ## Setup
 
@@ -23,12 +22,25 @@ cp config/profile.example.yaml profile/profile.yaml    # targets, pay, weights
 cp config/facts.example.yaml profile/facts.yaml        # the only facts drafts may use
 ```
 
+### Gmail job alerts (optional)
+
+`jobs fetch` also reads the last 14 days of LinkedIn and Jobstreet emails (`--days` to change) and pulls the job cards out of them: job alerts, recommendations and "jobs you may like" digests. Emails without job cards, such as profile-view notices, are skipped.
+
+1. Turn on 2-Step Verification for your Google account, then create an app password at https://myaccount.google.com/apppasswords.
+2. Add `GMAIL_USER` and `GMAIL_APP_PASSWORD` to `.env`.
+
+The mailbox is opened read-only over IMAP, so nothing is marked as read, moved or deleted. Jobstreet hides each job behind a tracked link; the tool follows it once to find the job's real page and remembers the answer in `data/cache/redirects.json`. Use `--no-gmail` to skip Gmail for a run, or `--eml file.eml ...` to read saved emails instead.
+
+Email jobs only carry the card's title, company, location and bullet points, so they score on less detail than board postings. `jobs fill` doesn't cover LinkedIn or Jobstreet: draft and approve as usual, and `fill` prints the job link and where your CV and cover letter PDFs are, so you can apply there yourself, then run `jobs submitted <id>`.
+
+With alert emails coming in, `config/companies.yaml` is optional.
+
 `profile/`, `out/`, `data/`, `config/companies.yaml` and `.env` are git-ignored, so your CV, pay and contact details stay on your machine.
 
 ## Daily use
 
 ```sh
-npm run jobs -- fetch            # pull postings, merge duplicates, apply your drop rules
+npm run jobs -- fetch            # pull postings and alert emails, merge duplicates, apply your drop rules
 npm run jobs -- rank             # score new jobs 0–100 (up to 50 per run; --limit to change)
 npm run jobs -- list             # best first; "!" marks on-call or support-duty language
 npm run jobs -- show 12          # score breakdown with a quoted reason per criterion
@@ -48,7 +60,7 @@ After `npm run build`, the same commands run as `node dist/cli.js <command>`, or
 
 | Stage | What happens | Code |
 | --- | --- | --- |
-| Fetch | Public Greenhouse and Lever job-board JSON, cached for a day, one request a second. Postings with the same company, cleaned title and city merge into one job, keeping each source's text. | `src/sources/` |
+| Fetch | Public Greenhouse and Lever job-board JSON, cached for a day, one request a second, plus job cards read from LinkedIn and Jobstreet emails in Gmail (`src/sources/email.ts`, `src/sources/gmail.ts`). Postings with the same company, cleaned title and city merge into one job, keeping each source's text. | `src/sources/` |
 | Rank, pass 1 | Drops blocked titles and locations you ruled out; flags phrases like "on-call" and "24/7". No model call. | `src/rank/rules.ts` |
 | Rank, pass 2 | Claude scores five criteria 0–5 with a quoted reason each; your weights fold them into 0–100. Jobs are re-scored only when your profile or the rubric changes. | `src/rank/score.ts`, `src/rank/rubric.ts` |
 | Draft | One Claude call writes the CV summary, cover letter and answers. Each sentence cites the fact ids it relies on; a sentence without a valid fact goes to `gaps.md` instead of the draft. Work authorisation, salary and notice-period questions are answered from `fixedAnswers` in your profile, never generated. | `src/draft/` |
@@ -62,7 +74,7 @@ Both model steps use `claude-opus-5-5` (scoring at low effort, drafting at mediu
 ## Development
 
 ```sh
-npm test            # vitest, against saved board responses and sample forms in test/fixtures; no network, no model calls
+npm test            # vitest, against saved board responses, anonymised alert emails and sample forms in test/fixtures; no network, no model calls
 npm run typecheck
 npm run build
 ```

@@ -21,13 +21,15 @@ import { RUBRIC } from "./rank/rubric.js";
 import { scoreJob } from "./rank/score.js";
 import { fetchGreenhouseQuestions } from "./sources/greenhouse.js";
 import type { Http } from "./sources/http.js";
-import { fetchAll } from "./sources/index.js";
+import { fetchAll, type FetchResult } from "./sources/index.js";
 
 const ruleInput = (j: JobRow) => ({ title: j.title, location: j.location, remote: j.remote === null ? null : j.remote === 1, description: j.description });
 
-/** Stage 1: fetch every board, store new postings, and run the pass-1 rules on them. */
-export async function runFetch(db: Db, http: Http, companies: Companies, profile: Profile) {
-  const { postings, errors } = await fetchAll(http, companies.companies);
+/** Stage 1: fetch every board, add any postings read from alert emails, store new ones, and run the pass-1 rules on them. */
+export async function runFetch(db: Db, http: Http, companies: Companies, profile: Profile, fromEmail?: FetchResult) {
+  const boards = await fetchAll(http, companies.companies);
+  const postings = [...boards.postings, ...(fromEmail?.postings ?? [])];
+  const errors = [...boards.errors, ...(fromEmail?.errors ?? [])];
   let added = 0;
   let dropped = 0;
   for (const p of postings) {
